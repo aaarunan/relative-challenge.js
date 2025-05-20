@@ -1,0 +1,185 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <title>Relative challenge</title>
+    <style>
+      body {
+        margin: 0;
+        background: #111;
+        color: #fff;
+        font-family: sans-serif;
+      }
+      canvas {
+        display: block;
+        margin: auto;
+        background: #222;
+      }
+      #score {
+        text-align: center;
+        margin-top: 10px;
+        font-size: 20px;
+      }
+    </style>
+  </head>
+  <body>
+    <canvas id="game" width="400" height="600"></canvas>
+    <div id="score">Score: 0</div>
+
+    <script>
+      const canvas = document.getElementById("game");
+      const ctx = canvas.getContext("2d");
+
+      const beatMap = {
+        bpm: 120,
+        notes: [
+          { time: 1, lane: "left" },
+          { time: 2, lane: "right", duration: 1.5 },
+          { time: 3, lane: "left" },
+          { time: 4, lane: "right" },
+        ],
+      };
+
+      const lanes = { left: 100, right: 300 };
+      const keyBindings = { a: "left", l: "right" };
+
+      const NOTE_SPEED = 200; // px per second
+      const HIT_WINDOW = 40; // px around target line
+      const TARGET_Y = 550;
+      let notes = [];
+      let heldKeys = {};
+      let score = 0;
+      let startTime = null;
+
+      function spawnNotes() {
+        const offset = 60 / beatMap.bpm; // seconds per beat
+        beatMap.notes.forEach((note) => {
+          notes.push({
+            lane: note.lane,
+            spawnTime: note.time * offset,
+            duration: note.duration || 0,
+            held: false,
+            hitStart: false,
+            hitEnd: false,
+          });
+        });
+      }
+
+      function drawLane(x) {
+        ctx.fillStyle = "#333";
+        ctx.fillRect(x - 40, 0, 80, canvas.height);
+        ctx.fillStyle = "#555";
+        ctx.fillRect(x - 40, TARGET_Y - 5, 80, 10);
+      }
+
+      function drawNote(note, currentTime) {
+        const elapsed = currentTime - note.spawnTime;
+        const y = elapsed * NOTE_SPEED;
+
+        if (note.duration > 0) {
+          // Long note
+          const endTime = note.spawnTime + note.duration;
+          const endY = (currentTime - endTime) * NOTE_SPEED;
+
+          ctx.fillStyle = "#6cf";
+          ctx.fillRect(lanes[note.lane] - 20, y, 40, endY - y);
+          ctx.fillStyle = "#0cf";
+          ctx.beginPath();
+          ctx.arc(lanes[note.lane], y, 20, 0, Math.PI * 2);
+          ctx.fill();
+          ctx.beginPath();
+          ctx.arc(lanes[note.lane], endY, 20, 0, Math.PI * 2);
+          ctx.fill();
+        } else {
+          // Tap note
+          ctx.fillStyle = "#f66";
+          ctx.beginPath();
+          ctx.arc(lanes[note.lane], y, 20, 0, Math.PI * 2);
+          ctx.fill();
+        }
+      }
+
+      function update(currentTime) {
+        const now = (currentTime - startTime) / 1000;
+
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+        drawLane(lanes.left);
+        drawLane(lanes.right);
+
+        notes.forEach((note) => {
+          if (
+            (now >= note.spawnTime - 1 && !note.hitEnd) ||
+            note.duration === 0
+          ) {
+            drawNote(note, now);
+          }
+
+          // Tap note hit detection
+          if (
+            !note.hitStart &&
+            note.duration === 0 &&
+            Math.abs((now - note.spawnTime) * NOTE_SPEED - TARGET_Y) <
+              HIT_WINDOW &&
+            heldKeys[note.lane]
+          ) {
+            note.hitStart = true;
+            score += 100;
+            document.getElementById("score").textContent = `Score: ${score}`;
+          }
+
+          // Long note start
+          if (
+            note.duration > 0 &&
+            !note.hitStart &&
+            Math.abs((now - note.spawnTime) * NOTE_SPEED - TARGET_Y) <
+              HIT_WINDOW &&
+            heldKeys[note.lane]
+          ) {
+            note.hitStart = true;
+          }
+
+          // Long note hold check
+          if (note.hitStart && !note.hitEnd && note.duration > 0) {
+            const endTime = note.spawnTime + note.duration;
+            const endY = (now - endTime) * NOTE_SPEED;
+
+            if (endY >= TARGET_Y) {
+              if (heldKeys[note.lane]) {
+                note.hitEnd = true;
+                score += 200; // Bonus for long note
+                document.getElementById(
+                  "score"
+                ).textContent = `Score: ${score}`;
+              }
+            }
+          }
+        });
+
+        requestAnimationFrame(update);
+      }
+
+      document.addEventListener("keydown", (e) => {
+        const lane = keyBindings[e.key.toLowerCase()];
+        if (lane) {
+          heldKeys[lane] = true;
+        }
+      });
+
+      document.addEventListener("keyup", (e) => {
+        const lane = keyBindings[e.key.toLowerCase()];
+        if (lane) {
+          heldKeys[lane] = false;
+        }
+      });
+
+      function startGame() {
+        spawnNotes();
+        startTime = performance.now();
+        requestAnimationFrame(update);
+      }
+
+      startGame();
+    </script>
+  </body>
+</html>
