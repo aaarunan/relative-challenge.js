@@ -24,7 +24,23 @@
   </head>
   <body>
     <canvas id="game" width="400" height="600"></canvas>
-    <div id="score">Score: 0</div>
+    <div id="statuses" style="text-align: center; margin-top: 10px">
+      <div id="score">Score: 0</div>
+
+      <div id="difficulty">Difficulty: 1</div>
+      <div id="hitAccuracy">Hit Accuracy: 100%</div>
+
+      <div id="missRate">Miss Rate: 0%</div>
+      <div id="unstableRate">Unstable Rate: 0</div>
+      <div id="comboLength">Max Combo: 0</div>
+      <div id="avgResult">Average Result: 0</div>
+      <div id="hitLog">Hit Log:</div>
+      <div id="gameEnded">False</div>
+    </div>
+    <div id="actionPanel">
+      <button id="startButton" style="margin-top: 10px">Start Game</button>
+      <button id="stopButton" style="margin-top: 10px">Stop Game</button>
+    </div>
 
     <script>
       const canvas = document.getElementById("game");
@@ -32,11 +48,16 @@
 
       const beatMap = {
         bpm: 120,
+        duration: 6, // seconds
+        difficulty: 1,
         notes: [
-          { time: 1, lane: "left" },
-          { time: 2, lane: "right", duration: 1.5 },
-          { time: 3, lane: "left" },
-          { time: 4, lane: "right" },
+          { time: 0, lane: "left" },
+          { time: 1, lane: "right" },
+          { time: 2, lane: "left" },
+          { time: 3, lane: "right" },
+          { time: 4, lane: "left" },
+          { time: 5, lane: "right" },
+          { time: 6, lane: "left" },
         ],
       };
 
@@ -123,6 +144,14 @@
               HIT_WINDOW &&
             heldKeys[note.lane]
           ) {
+            logHit({
+              timestamp: now,
+              noteTime: note.spawnTime,
+              result: "perfect",
+              noteSpeed: NOTE_SPEED,
+              hitWindow: HIT_WINDOW,
+              difficulty: beatMap.difficulty,
+            });
             note.hitStart = true;
             score += 100;
             document.getElementById("score").textContent = `Score: ${score}`;
@@ -156,7 +185,7 @@
           }
         });
 
-        requestAnimationFrame(update);
+        animationId = requestAnimationFrame(update);
       }
 
       document.addEventListener("keydown", (e) => {
@@ -173,10 +202,270 @@
         }
       });
 
+      let gameEnded = null;
+
+      function saveLogToLocalStorage() {
+        const logs = JSON.parse(localStorage.getItem("hitLogs") || "[]");
+
+        const logData = {
+          hitLog: hitLog,
+          score: score,
+          difficulty: beatMap.difficulty,
+          timestamp: new Date().toISOString(),
+        };
+
+        logs.push(logData);
+        localStorage.setItem("hitLogs", JSON.stringify(logs));
+        console.log("Hit log saved to local storage.");
+      }
+
       function startGame() {
+        const history = getHistoricalMetrics();
+        const adjustment = decideDifficultyAdjustment(
+          history,
+          beatMap.difficulty
+        );
+        const newDiff = adjustDifficulty(beatMap.difficulty, adjustment);
+        beatMap.difficulty = newDiff.newDifficulty;
+
+        gameEnded = false;
+
+        setTimeout(() => {
+          if (!gameEnded) {
+            endGame();
+          }
+        }, beatMap.duration * 1000 + 1000);
+
         spawnNotes();
+        startModel();
         startTime = performance.now();
         requestAnimationFrame(update);
+      }
+
+      function endGame() {
+        gameEnded = true;
+        stopModel();
+        cancelAnimationFrame(animationId);
+        saveLogToLocalStorage();
+        const finalScore = document.createElement("div");
+        finalScore.style.textAlign = "center";
+        finalScore.style.fontSize = "28px";
+        finalScore.style.marginTop = "20px";
+        finalScore.innerHTML = `<strong>Game Over!</strong><br>Final Score: ${score}`;
+        document.body.appendChild(finalScore);
+      }
+
+      /*
+       * model
+       */
+
+      const modelInterval = 500; // milliseconds
+
+      let modelId = null;
+
+      function startModel() {
+        if (modelId) {
+          clearInterval(modelId);
+        }
+        modelId = setInterval(() => {
+          const currentTime = performance.now();
+          const noteTime = currentTime - startTime;
+          const result = "perfect"; // Simulate a perfect hit
+          const noteSpeed = NOTE_SPEED;
+          const hitWindow = HIT_WINDOW;
+          const difficulty = beatMap.difficulty;
+
+          const metrics = aggregatePerformance(hitLog);
+          drawStatuses(metrics, gameEnded);
+          const adjustment = decideDifficultyAdjustment(
+            metrics,
+            beatMap.difficulty
+          );
+          const newDifficulty = adjustDifficulty(
+            beatMap.difficulty,
+            adjustment
+          );
+
+          beatMap.difficulty = newDifficulty.newDifficulty;
+        }, modelInterval);
+      }
+
+      function stopModel() {
+        if (modelId) {
+          clearInterval(modelId);
+          modelId = null;
+        }
+      }
+
+      const hitLog = [];
+
+      function logHit({
+        timestamp,
+        noteTime,
+        result,
+        noteSpeed,
+        hitWindow,
+        difficulty,
+      }) {
+        const hitOffset = timestamp - noteTime;
+        hitLog.push({
+          timestamp,
+          noteTime,
+          result,
+          hitOffset,
+          noteSpeed,
+          hitWindow,
+          difficulty,
+        });
+      }
+
+      function aggregatePerformance(logs) {
+        const results = { perfect: 0, good: 0, bad: 0, miss: 0 };
+        const hitOffsets = [];
+
+        logs.forEach((entry) => {
+          results[entry.result]++;
+          if (entry.result !== "miss") hitOffsets.push(entry.hitOffset);
+        });
+
+        const totalHits = logs.length;
+        const totalMisses = results.miss;
+        const avgOffset =
+          hitOffsets.reduce((a, b) => a + Math.abs(b), 0) / hitOffsets.length ||
+          0;
+        const stdDevOffset =
+          Math.sqrt(
+            hitOffsets.reduce(
+              (sum, val) => sum + Math.pow(val - avgOffset, 2),
+              0
+            ) / hitOffsets.length
+          ) || 0;
+
+        const avgResultScore =
+          (results.perfect * 1 + results.good * 0.75 + results.bad * 0.5) /
+          (totalHits || 1);
+
+        return {
+          hit_accuracy: 100 - avgOffset,
+          miss_rate: totalMisses / totalHits,
+          unstable_rate: stdDevOffset,
+          combo_length: calculateMaxCombo(logs),
+          avg_result: avgResultScore,
+        };
+      }
+
+      function weightedAveragePerformance(
+        metrics,
+        history,
+        weightCurrent = 0.7
+      ) {
+        const w = weightCurrent;
+        return {
+          hit_accuracy:
+            w * metrics.hit_accuracy + (1 - w) * history.hit_accuracy,
+          miss_rate: w * metrics.miss_rate + (1 - w) * history.miss_rate,
+          unstable_rate:
+            w * metrics.unstable_rate + (1 - w) * history.unstable_rate,
+          avg_result: w * metrics.avg_result + (1 - w) * history.avg_result,
+          combo_length:
+            w * metrics.combo_length + (1 - w) * history.combo_length,
+        };
+      }
+
+      function calculateMaxCombo(logs) {
+        let maxCombo = 0,
+          combo = 0;
+        for (const hit of logs) {
+          if (hit.result !== "miss") combo++;
+          else {
+            maxCombo = Math.max(maxCombo, combo);
+            combo = 0;
+          }
+        }
+        return Math.max(maxCombo, combo);
+      }
+
+      function decideDifficultyAdjustment(currentMetrics, currentDifficulty) {
+        const historicalMetrics = getHistoricalMetrics();
+        const metrics = weightedAveragePerformance(
+          currentMetrics,
+          historicalMetrics
+        );
+
+        if (metrics.miss_rate > 0.2 || metrics.avg_result < 0.6) return -1; // Too hard
+        if (
+          metrics.miss_rate < 0.05 &&
+          metrics.hit_accuracy > 95 &&
+          metrics.unstable_rate < 20
+        )
+          return +1; // Too easy
+
+        return 0; // No change
+      }
+
+      function adjustDifficulty(currentDifficulty, adjustment) {
+        let newDifficulty = currentDifficulty + adjustment;
+        newDifficulty = Math.max(1, Math.min(10, newDifficulty));
+
+        // Optionally adjust other parameters:
+        const noteSpeed = 1 + (newDifficulty - 5) * 0.1;
+        const hitWindow = 50 - (newDifficulty - 5) * 2;
+
+        return {
+          newDifficulty,
+          noteSpeed: parseFloat(noteSpeed.toFixed(2)),
+          hitWindow: Math.max(20, hitWindow),
+        };
+      }
+
+      function getHistoricalMetrics() {
+        const logs = JSON.parse(localStorage.getItem("hitLogs") || "[]");
+        const allHits = [];
+
+        logs.forEach((logData) => {
+          try {
+            const parsed = JSON.parse(logData);
+            allHits.push(...parsed.hitLog);
+          } catch (e) {
+            console.warn("Corrupted log ignored");
+          }
+        });
+
+        return aggregatePerformance(allHits);
+      }
+
+      function drawStatuses(metrics, gameEnded) {
+        document.getElementById(
+          "difficulty"
+        ).textContent = `Difficulty: ${beatMap.difficulty}`;
+        document.getElementById(
+          "hitAccuracy"
+        ).textContent = `Hit Accuracy: ${metrics.hit_accuracy.toFixed(2)}%`;
+        document.getElementById("missRate").textContent = `Miss Rate: ${(
+          metrics.miss_rate * 100
+        ).toFixed(2)}%`;
+
+        document.getElementById(
+          "unstableRate"
+        ).textContent = `Unstable Rate: ${metrics.unstable_rate.toFixed(2)}`;
+
+        document.getElementById(
+          "comboLength"
+        ).textContent = `Max Combo: ${metrics.combo_length}`;
+        document.getElementById(
+          "avgResult"
+        ).textContent = `Average Result: ${metrics.avg_result.toFixed(2)}`;
+
+        document.getElementById(
+          "gameEnded"
+        ).textContent = `Game Ended: ${gameEnded}`;
+        const hitLogDiv = document.getElementById("hitLog");
+        hitLogDiv.innerHTML = "Hit Log:<br>";
+        hitLog.forEach((hit) => {
+          hitLogDiv.innerHTML += `Time: ${hit.timestamp.toFixed(2)}s, Result: ${
+            hit.result
+          }, Offset: ${hit.hitOffset.toFixed(2)}ms<br>`;
+        });
       }
 
       startGame();
