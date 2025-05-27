@@ -148,6 +148,7 @@
               timestamp: now,
               noteTime: note.spawnTime,
               result: "perfect",
+              hitOffset: now - note.spawnTime,
               noteSpeed: NOTE_SPEED,
               hitWindow: HIT_WINDOW,
               difficulty: beatMap.difficulty,
@@ -157,7 +158,7 @@
             document.getElementById("score").textContent = `Score: ${score}`;
           }
 
-          // Long note start
+          // Long note start hit detection
           if (
             note.duration > 0 &&
             !note.hitStart &&
@@ -168,19 +169,65 @@
             note.hitStart = true;
           }
 
-          // Long note hold check
+          // Missed start for tap notes
+          if (
+            !note.hitStart &&
+            note.duration === 0 &&
+            (now - note.spawnTime) * NOTE_SPEED > TARGET_Y + HIT_WINDOW
+          ) {
+            note.hitStart = true; // Mark as processed to avoid double counting
+            logHit({
+              timestamp: now,
+              noteTime: note.spawnTime,
+              result: "miss",
+              hitOffset: NaN,
+              noteSpeed: NOTE_SPEED,
+              hitWindow: HIT_WINDOW,
+              difficulty: beatMap.difficulty,
+            });
+          }
+
+          // Missed start for long notes
+          if (
+            !note.hitStart &&
+            note.duration > 0 &&
+            (now - note.spawnTime) * NOTE_SPEED > TARGET_Y + HIT_WINDOW
+          ) {
+            note.hitStart = true; // mark processed
+            logHit({
+              timestamp: now,
+              noteTime: note.spawnTime,
+              result: "miss",
+              hitOffset: NaN,
+              noteSpeed: NOTE_SPEED,
+              hitWindow: HIT_WINDOW,
+              difficulty: beatMap.difficulty,
+            });
+          }
+
+          // Long note hold check (early release or success)
           if (note.hitStart && !note.hitEnd && note.duration > 0) {
             const endTime = note.spawnTime + note.duration;
-            const endY = (now - endTime) * NOTE_SPEED;
 
-            if (endY >= TARGET_Y) {
-              if (heldKeys[note.lane]) {
-                note.hitEnd = true;
-                score += 200; // Bonus for long note
-                document.getElementById(
-                  "score"
-                ).textContent = `Score: ${score}`;
-              }
+            // Early release (miss)
+            if (now < endTime && !heldKeys[note.lane]) {
+              note.hitEnd = true;
+              logHit({
+                timestamp: now,
+                noteTime: note.spawnTime,
+                result: "miss",
+                hitOffset: NaN,
+                noteSpeed: NOTE_SPEED,
+                hitWindow: HIT_WINDOW,
+                difficulty: beatMap.difficulty,
+              });
+            }
+
+            // Successful hold till end
+            if (now >= endTime && heldKeys[note.lane]) {
+              note.hitEnd = true;
+              score += 200; // Bonus for long note
+              document.getElementById("score").textContent = `Score: ${score}`;
             }
           }
         });
@@ -318,21 +365,26 @@
           difficulty,
         });
       }
-
       function aggregatePerformance(logs) {
         const results = { perfect: 0, good: 0, bad: 0, miss: 0 };
-        const hitOffsets = [];
 
         logs.forEach((entry) => {
-          results[entry.result]++;
-          if (entry.result !== "miss") hitOffsets.push(entry.hitOffset);
+          results[entry.result] = (results[entry.result] || 0) + 1;
         });
 
-        const totalHits = logs.length;
-        const totalMisses = results.miss;
+        const totalNotes = logs.length;
+        const totalHits = totalNotes - results.miss;
+
+        const hitAccuracy = (totalHits / totalNotes) * 100;
+
+        const hitOffsets = logs
+          .filter((entry) => entry.result !== "miss")
+          .map((entry) => entry.hitOffset);
+
         const avgOffset =
           hitOffsets.reduce((a, b) => a + Math.abs(b), 0) / hitOffsets.length ||
           0;
+
         const stdDevOffset =
           Math.sqrt(
             hitOffsets.reduce(
@@ -343,11 +395,11 @@
 
         const avgResultScore =
           (results.perfect * 1 + results.good * 0.75 + results.bad * 0.5) /
-          (totalHits || 1);
+          (totalNotes || 1);
 
         return {
-          hit_accuracy: 100 - avgOffset,
-          miss_rate: totalMisses / totalHits,
+          hit_accuracy: hitAccuracy, // <- real metric here
+          miss_rate: results.miss / totalNotes,
           unstable_rate: stdDevOffset,
           combo_length: calculateMaxCombo(logs),
           avg_result: avgResultScore,
@@ -423,11 +475,8 @@
         const allHits = [];
 
         logs.forEach((logData) => {
-          try {
-            const parsed = JSON.parse(logData);
-            allHits.push(...parsed.hitLog);
-          } catch (e) {
-            console.warn("Corrupted log ignored");
+          if (Array.isArray(logData.hitLog)) {
+            allHits.push(...logData.hitLog);
           }
         });
 
