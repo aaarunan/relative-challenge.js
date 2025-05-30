@@ -26,7 +26,8 @@
     </style>
   </head>
   <body>
-    <div id="gameContainer">
+    <div id="galaameContainer">
+      <audio id="gameAudio" src="gangnam-style.mp3" preload="auto"></audio>
       <canvas id="gameCanvas" width="400" height="600"></canvas>
       <div id="uiContainer">
         <div class="statsColumn">
@@ -74,193 +75,925 @@
       const DIFFICULTIES = {
         easy: {
           name: "Easy",
-          bpm: 90,
+          bpm: 132,
           noteSpeed: 120, // px/s
           hitWindowMillis: { perfect: 100, good: 150, missAfter: 200 },
           notes: [
-            { time: 10.8665, lane: "left", duration: "" },
-            { time: 11.7756, lane: "left", duration: "" },
-            { time: 13.1393, lane: "left", duration: "" },
-            { time: 14.5029, lane: "left", duration: "" },
-            { time: 15.8665, lane: "left", duration: "" },
-            { time: 16.7756, lane: "left", duration: "" },
-            { time: 17.6847, lane: "right", duration: "" },
-            { time: 18.5938, lane: "left", duration: "" },
-            { time: 19.5029, lane: "left", duration: 1.3636 },
-            { time: 21.3211, lane: "right", duration: "" },
-            { time: 21.7756, lane: "right", duration: "" },
-            { time: 23.1393, lane: "left", duration: 1.3636 },
-            { time: 24.9575, lane: "right", duration: "" },
-            { time: 25.412, lane: "right", duration: "" },
-            { time: 26.7756, lane: "left", duration: 1.3636 },
-            { time: 28.5938, lane: "right", duration: "" },
-            { time: 29.0484, lane: "right", duration: "" },
-            { time: 30.8665, lane: "right", duration: "" },
-            { time: 31.3211, lane: "right", duration: "" },
-            { time: 32.6847, lane: "left", duration: "" },
-            { time: 33.5938, lane: "right", duration: "" },
-            { time: 34.5029, lane: "left", duration: "" },
-            { time: 35.412, lane: "right", duration: "" },
-            { time: 36.3211, lane: "left", duration: "" },
-            { time: 37.2302, lane: "right", duration: "" },
-            { time: 38.1393, lane: "left", duration: "" },
-            { time: 39.0484, lane: "left", duration: "" },
-            { time: 39.9575, lane: "left", duration: "" },
-            { time: 40.8665, lane: "right", duration: "" },
-            { time: 41.7756, lane: "left", duration: "" },
-            { time: 42.6847, lane: "left", duration: "" },
-            { time: 43.5938, lane: "left", duration: "" },
-            { time: 44.5029, lane: "right", duration: "" },
-            { time: 45.8665, lane: "right", duration: "" },
-            { time: 47.6847, lane: "left", duration: "" },
-            { time: 47.6847, lane: "right", duration: "" },
-            { time: 49.5029, lane: "left", duration: "" },
-            { time: 49.5029, lane: "right", duration: "" },
-            { time: 51.3211, lane: "left", duration: "" },
-            { time: 51.3211, lane: "right", duration: "" },
-            { time: 53.1393, lane: "left", duration: "" },
-            { time: 53.1393, lane: "right", duration: "" },
-            { time: 54.9575, lane: "left", duration: "" },
-            { time: 54.9575, lane: "right", duration: "" },
-            { time: 56.7756, lane: "left", duration: "" },
-            { time: 56.7756, lane: "right", duration: "" },
-            { time: 58.5938, lane: "left", duration: "" },
-            { time: 58.5938, lane: "right", duration: "" },
-            { time: 60.412, lane: "left", duration: "" },
-            { time: 60.412, lane: "right", duration: "" },
-            { time: 61.7756, lane: "left", duration: 4.0909 },
-            { time: 61.7756, lane: "right", duration: 4.0909 },
-            { time: 67.6847, lane: "left", duration: "" },
-            { time: 67.6847, lane: "right", duration: "" },
-            { time: 69.9575, lane: "left", duration: "" },
-            { time: 70.8665, lane: "left", duration: "" },
-            { time: 73.1393, lane: "left", duration: "" },
-            { time: 74.0484, lane: "left", duration: "" },
-            { time: 74.0484, lane: "right", duration: "" },
-            { time: 74.9575, lane: "right", duration: "" },
-            { time: 75.8665, lane: "left", duration: "" },
-            { time: 76.7756, lane: "right", duration: "" },
-            { time: 77.6847, lane: "left", duration: "" },
-            { time: 77.6847, lane: "right", duration: "" },
-            { time: 78.5938, lane: "right", duration: "" },
-            { time: 79.5029, lane: "left", duration: "" },
-            { time: 80.412, lane: "right", duration: "" },
-            { time: 81.3211, lane: "left", duration: "" },
-            { time: 81.3211, lane: "right", duration: "" },
-            { time: 82.2302, lane: "right", duration: "" },
-            { time: 83.1393, lane: "left", duration: "" },
-            { time: 84.0484, lane: "right", duration: "" },
-            { time: 84.9575, lane: "left", duration: "" },
-            { time: 84.9575, lane: "right", duration: "" },
-            { time: 85.8665, lane: "left", duration: 2.7273 },
-            { time: 89.5029, lane: "left", duration: "" },
-            { time: 90.412, lane: "left", duration: "" },
-            { time: 91.3211, lane: "right", duration: "" },
-            { time: 92.2302, lane: "left", duration: "" },
-            { time: 92.2302, lane: "right", duration: "" },
-            { time: 93.1393, lane: "left", duration: 2.7273 },
-            { time: 96.7756, lane: "left", duration: "" },
-            { time: 97.6847, lane: "left", duration: "" },
-            { time: 98.5938, lane: "left", duration: 1.5909 },
-            { time: 100.412, lane: "left", duration: "" },
-            { time: 101.3211, lane: "left", duration: 1.3636 },
-            { time: 103.1393, lane: "right", duration: "" },
-            { time: 103.5938, lane: "right", duration: "" },
-            { time: 104.9575, lane: "left", duration: 1.3636 },
-            { time: 106.7756, lane: "right", duration: "" },
-            { time: 107.2302, lane: "right", duration: "" },
-            { time: 108.5938, lane: "left", duration: 1.3636 },
-            { time: 110.412, lane: "right", duration: "" },
-            { time: 110.8665, lane: "right", duration: "" },
-            { time: 112.6847, lane: "right", duration: "" },
-            { time: 113.1393, lane: "right", duration: "" },
-            { time: 114.5029, lane: "left", duration: "" },
-            { time: 115.412, lane: "right", duration: "" },
-            { time: 116.3211, lane: "left", duration: "" },
-            { time: 117.2302, lane: "right", duration: "" },
-            { time: 118.1393, lane: "left", duration: "" },
-            { time: 119.0484, lane: "right", duration: "" },
-            { time: 119.9575, lane: "left", duration: "" },
-            { time: 120.8665, lane: "left", duration: "" },
-            { time: 121.7756, lane: "left", duration: "" },
-            { time: 122.6847, lane: "right", duration: "" },
-            { time: 123.5938, lane: "left", duration: "" },
-            { time: 124.5029, lane: "left", duration: "" },
-            { time: 125.412, lane: "left", duration: "" },
-            { time: 126.3211, lane: "right", duration: "" },
-            { time: 127.6847, lane: "right", duration: "" },
-            { time: 129.5029, lane: "left", duration: "" },
-            { time: 129.5029, lane: "right", duration: "" },
-            { time: 131.3211, lane: "left", duration: "" },
-            { time: 131.3211, lane: "right", duration: "" },
-            { time: 133.1393, lane: "left", duration: "" },
-            { time: 133.1393, lane: "right", duration: "" },
-            { time: 134.9575, lane: "left", duration: "" },
-            { time: 134.9575, lane: "right", duration: "" },
-            { time: 136.7756, lane: "left", duration: "" },
-            { time: 136.7756, lane: "right", duration: "" },
-            { time: 138.5938, lane: "left", duration: "" },
-            { time: 138.5938, lane: "right", duration: "" },
-            { time: 140.412, lane: "left", duration: "" },
-            { time: 140.412, lane: "right", duration: "" },
-            { time: 142.2302, lane: "left", duration: "" },
-            { time: 142.2302, lane: "right", duration: "" },
-            { time: 143.5938, lane: "left", duration: 4.0909 },
-            { time: 143.5938, lane: "right", duration: 4.0909 },
-            { time: 149.5029, lane: "left", duration: "" },
-            { time: 149.5029, lane: "right", duration: "" },
-            { time: 151.7756, lane: "left", duration: "" },
-            { time: 152.6847, lane: "left", duration: "" },
-            { time: 154.9575, lane: "left", duration: "" },
-            { time: 155.8665, lane: "left", duration: "" },
-            { time: 155.8665, lane: "right", duration: "" },
-            { time: 156.7756, lane: "right", duration: "" },
-            { time: 157.6847, lane: "left", duration: "" },
-            { time: 158.5938, lane: "right", duration: "" },
-            { time: 159.5029, lane: "left", duration: "" },
-            { time: 159.5029, lane: "right", duration: "" },
-            { time: 160.412, lane: "right", duration: "" },
-            { time: 161.3211, lane: "left", duration: "" },
-            { time: 162.2302, lane: "right", duration: "" },
-            { time: 163.1393, lane: "left", duration: "" },
-            { time: 163.1393, lane: "right", duration: "" },
-            { time: 164.0484, lane: "right", duration: "" },
-            { time: 164.9575, lane: "left", duration: "" },
-            { time: 165.8665, lane: "right", duration: "" },
-            { time: 166.7756, lane: "left", duration: "" },
-            { time: 166.7756, lane: "right", duration: "" },
-            { time: 167.6847, lane: "left", duration: 2.7273 },
-            { time: 171.3211, lane: "left", duration: "" },
-            { time: 172.2302, lane: "left", duration: "" },
-            { time: 173.1393, lane: "right", duration: "" },
-            { time: 174.0484, lane: "left", duration: "" },
-            { time: 174.0484, lane: "right", duration: "" },
-            { time: 174.9575, lane: "left", duration: 2.7273 },
-            { time: 178.5938, lane: "left", duration: "" },
-            { time: 179.5029, lane: "left", duration: "" },
-            { time: 180.412, lane: "left", duration: 1.5909 },
-            { time: 182.2302, lane: "left", duration: 1.8182 },
-            { time: 184.5029, lane: "right", duration: "" },
-            { time: 185.8665, lane: "right", duration: 1.8182 },
-            { time: 188.1393, lane: "left", duration: "" },
-            { time: 189.5029, lane: "left", duration: 1.8182 },
-            { time: 191.7756, lane: "right", duration: "" },
-            { time: 194.9575, lane: "left", duration: 1.8182 },
-            { time: 193.1393, lane: "right", duration: 3.6364 },
-            { time: 197.2302, lane: "left", duration: "" },
-            { time: 198.1393, lane: "left", duration: "" },
-            { time: 200.412, lane: "left", duration: 2.7273 },
-            { time: 204.0484, lane: "left", duration: "" },
-            { time: 204.9575, lane: "left", duration: "" },
-            { time: 205.8665, lane: "right", duration: "" },
-            { time: 206.7756, lane: "left", duration: "" },
-            { time: 206.7756, lane: "right", duration: "" },
-            { time: 207.6847, lane: "left", duration: 2.7273 },
-            { time: 211.3211, lane: "left", duration: "" },
-            { time: 212.2302, lane: "left", duration: "" },
-            { time: 213.1393, lane: "left", duration: 1.5909 },
-            { time: 215.2605, lane: "left", duration: "" },
-            { time: 215.8665, lane: "left", duration: "" },
+            {
+              time: 10.8665,
+              lane: "left",
+              duration: "",
+            },
+            {
+              time: 11.7756,
+              lane: "left",
+              duration: "",
+            },
+            {
+              time: 13.1393,
+              lane: "left",
+              duration: "",
+            },
+            {
+              time: 14.5029,
+              lane: "left",
+              duration: "",
+            },
+            {
+              time: 15.8665,
+              lane: "left",
+              duration: "",
+            },
+            {
+              time: 16.7756,
+              lane: "left",
+              duration: "",
+            },
+            {
+              time: 17.6847,
+              lane: "right",
+              duration: "",
+            },
+            {
+              time: 18.5938,
+              lane: "left",
+              duration: "",
+            },
+            {
+              time: 19.5029,
+              lane: "left",
+              duration: 1.3636,
+            },
+            {
+              time: 21.3211,
+              lane: "right",
+              duration: "",
+            },
+            {
+              time: 21.7756,
+              lane: "right",
+              duration: "",
+            },
+            {
+              time: 23.1393,
+              lane: "left",
+              duration: 1.3636,
+            },
+            {
+              time: 24.9575,
+              lane: "right",
+              duration: "",
+            },
+            {
+              time: 25.412,
+              lane: "right",
+              duration: "",
+            },
+            {
+              time: 26.7756,
+              lane: "left",
+              duration: 1.3636,
+            },
+            {
+              time: 28.5938,
+              lane: "right",
+              duration: "",
+            },
+            {
+              time: 29.0484,
+              lane: "right",
+              duration: "",
+            },
+            {
+              time: 30.8665,
+              lane: "right",
+              duration: "",
+            },
+            {
+              time: 31.3211,
+              lane: "right",
+              duration: "",
+            },
+            {
+              time: 32.6847,
+              lane: "left",
+              duration: "",
+            },
+            {
+              time: 33.5938,
+              lane: "right",
+              duration: "",
+            },
+            {
+              time: 34.5029,
+              lane: "left",
+              duration: "",
+            },
+            {
+              time: 35.412,
+              lane: "right",
+              duration: "",
+            },
+            {
+              time: 36.3211,
+              lane: "left",
+              duration: "",
+            },
+            {
+              time: 37.2302,
+              lane: "right",
+              duration: "",
+            },
+            {
+              time: 38.1393,
+              lane: "left",
+              duration: "",
+            },
+            {
+              time: 39.0484,
+              lane: "left",
+              duration: "",
+            },
+            {
+              time: 39.9575,
+              lane: "left",
+              duration: "",
+            },
+            {
+              time: 40.8665,
+              lane: "right",
+              duration: "",
+            },
+            {
+              time: 41.7756,
+              lane: "left",
+              duration: "",
+            },
+            {
+              time: 42.6847,
+              lane: "left",
+              duration: "",
+            },
+            {
+              time: 43.5938,
+              lane: "left",
+              duration: "",
+            },
+            {
+              time: 44.5029,
+              lane: "right",
+              duration: "",
+            },
+            {
+              time: 45.8665,
+              lane: "right",
+              duration: "",
+            },
+            {
+              time: 47.6847,
+              lane: "left",
+              duration: "",
+            },
+            {
+              time: 47.6847,
+              lane: "right",
+              duration: "",
+            },
+            {
+              time: 49.5029,
+              lane: "left",
+              duration: "",
+            },
+            {
+              time: 49.5029,
+              lane: "right",
+              duration: "",
+            },
+            {
+              time: 51.3211,
+              lane: "left",
+              duration: "",
+            },
+            {
+              time: 51.3211,
+              lane: "right",
+              duration: "",
+            },
+            {
+              time: 53.1393,
+              lane: "left",
+              duration: "",
+            },
+            {
+              time: 53.1393,
+              lane: "right",
+              duration: "",
+            },
+            {
+              time: 54.9575,
+              lane: "left",
+              duration: "",
+            },
+            {
+              time: 54.9575,
+              lane: "right",
+              duration: "",
+            },
+            {
+              time: 56.7756,
+              lane: "left",
+              duration: "",
+            },
+            {
+              time: 56.7756,
+              lane: "right",
+              duration: "",
+            },
+            {
+              time: 58.5938,
+              lane: "left",
+              duration: "",
+            },
+            {
+              time: 58.5938,
+              lane: "right",
+              duration: "",
+            },
+            {
+              time: 60.412,
+              lane: "left",
+              duration: "",
+            },
+            {
+              time: 60.412,
+              lane: "right",
+              duration: "",
+            },
+            {
+              time: 61.7756,
+              lane: "left",
+              duration: 4.0909,
+            },
+            {
+              time: 61.7756,
+              lane: "right",
+              duration: 4.0909,
+            },
+            {
+              time: 67.6847,
+              lane: "left",
+              duration: "",
+            },
+            {
+              time: 67.6847,
+              lane: "right",
+              duration: "",
+            },
+            {
+              time: 69.9575,
+              lane: "left",
+              duration: "",
+            },
+            {
+              time: 70.8665,
+              lane: "left",
+              duration: "",
+            },
+            {
+              time: 73.1393,
+              lane: "left",
+              duration: "",
+            },
+            {
+              time: 74.0484,
+              lane: "left",
+              duration: "",
+            },
+            {
+              time: 74.0484,
+              lane: "right",
+              duration: "",
+            },
+            {
+              time: 74.9575,
+              lane: "right",
+              duration: "",
+            },
+            {
+              time: 75.8665,
+              lane: "left",
+              duration: "",
+            },
+            {
+              time: 76.7756,
+              lane: "right",
+              duration: "",
+            },
+            {
+              time: 77.6847,
+              lane: "left",
+              duration: "",
+            },
+            {
+              time: 77.6847,
+              lane: "right",
+              duration: "",
+            },
+            {
+              time: 78.5938,
+              lane: "right",
+              duration: "",
+            },
+            {
+              time: 79.5029,
+              lane: "left",
+              duration: "",
+            },
+            {
+              time: 80.412,
+              lane: "right",
+              duration: "",
+            },
+            {
+              time: 81.3211,
+              lane: "left",
+              duration: "",
+            },
+            {
+              time: 81.3211,
+              lane: "right",
+              duration: "",
+            },
+            {
+              time: 82.2302,
+              lane: "right",
+              duration: "",
+            },
+            {
+              time: 83.1393,
+              lane: "left",
+              duration: "",
+            },
+            {
+              time: 84.0484,
+              lane: "right",
+              duration: "",
+            },
+            {
+              time: 84.9575,
+              lane: "left",
+              duration: "",
+            },
+            {
+              time: 84.9575,
+              lane: "right",
+              duration: "",
+            },
+            {
+              time: 85.8665,
+              lane: "left",
+              duration: 2.7273,
+            },
+            {
+              time: 89.5029,
+              lane: "left",
+              duration: "",
+            },
+            {
+              time: 90.412,
+              lane: "left",
+              duration: "",
+            },
+            {
+              time: 91.3211,
+              lane: "right",
+              duration: "",
+            },
+            {
+              time: 92.2302,
+              lane: "left",
+              duration: "",
+            },
+            {
+              time: 92.2302,
+              lane: "right",
+              duration: "",
+            },
+            {
+              time: 93.1393,
+              lane: "left",
+              duration: 2.7273,
+            },
+            {
+              time: 96.7756,
+              lane: "left",
+              duration: "",
+            },
+            {
+              time: 97.6847,
+              lane: "left",
+              duration: "",
+            },
+            {
+              time: 98.5938,
+              lane: "left",
+              duration: 1.5909,
+            },
+            {
+              time: 100.412,
+              lane: "left",
+              duration: "",
+            },
+            {
+              time: 101.3211,
+              lane: "left",
+              duration: 1.3636,
+            },
+            {
+              time: 103.1393,
+              lane: "right",
+              duration: "",
+            },
+            {
+              time: 103.5938,
+              lane: "right",
+              duration: "",
+            },
+            {
+              time: 104.9575,
+              lane: "left",
+              duration: 1.3636,
+            },
+            {
+              time: 106.7756,
+              lane: "right",
+              duration: "",
+            },
+            {
+              time: 107.2302,
+              lane: "right",
+              duration: "",
+            },
+            {
+              time: 108.5938,
+              lane: "left",
+              duration: 1.3636,
+            },
+            {
+              time: 110.412,
+              lane: "right",
+              duration: "",
+            },
+            {
+              time: 110.8665,
+              lane: "right",
+              duration: "",
+            },
+            {
+              time: 112.6847,
+              lane: "right",
+              duration: "",
+            },
+            {
+              time: 113.1393,
+              lane: "right",
+              duration: "",
+            },
+            {
+              time: 114.5029,
+              lane: "left",
+              duration: "",
+            },
+            {
+              time: 115.412,
+              lane: "right",
+              duration: "",
+            },
+            {
+              time: 116.3211,
+              lane: "left",
+              duration: "",
+            },
+            {
+              time: 117.2302,
+              lane: "right",
+              duration: "",
+            },
+            {
+              time: 118.1393,
+              lane: "left",
+              duration: "",
+            },
+            {
+              time: 119.0484,
+              lane: "right",
+              duration: "",
+            },
+            {
+              time: 119.9575,
+              lane: "left",
+              duration: "",
+            },
+            {
+              time: 120.8665,
+              lane: "left",
+              duration: "",
+            },
+            {
+              time: 121.7756,
+              lane: "left",
+              duration: "",
+            },
+            {
+              time: 122.6847,
+              lane: "right",
+              duration: "",
+            },
+            {
+              time: 123.5938,
+              lane: "left",
+              duration: "",
+            },
+            {
+              time: 124.5029,
+              lane: "left",
+              duration: "",
+            },
+            {
+              time: 125.412,
+              lane: "left",
+              duration: "",
+            },
+            {
+              time: 126.3211,
+              lane: "right",
+              duration: "",
+            },
+            {
+              time: 127.6847,
+              lane: "right",
+              duration: "",
+            },
+            {
+              time: 129.5029,
+              lane: "left",
+              duration: "",
+            },
+            {
+              time: 129.5029,
+              lane: "right",
+              duration: "",
+            },
+            {
+              time: 131.3211,
+              lane: "left",
+              duration: "",
+            },
+            {
+              time: 131.3211,
+              lane: "right",
+              duration: "",
+            },
+            {
+              time: 133.1393,
+              lane: "left",
+              duration: "",
+            },
+            {
+              time: 133.1393,
+              lane: "right",
+              duration: "",
+            },
+            {
+              time: 134.9575,
+              lane: "left",
+              duration: "",
+            },
+            {
+              time: 134.9575,
+              lane: "right",
+              duration: "",
+            },
+            {
+              time: 136.7756,
+              lane: "left",
+              duration: "",
+            },
+            {
+              time: 136.7756,
+              lane: "right",
+              duration: "",
+            },
+            {
+              time: 138.5938,
+              lane: "left",
+              duration: "",
+            },
+            {
+              time: 138.5938,
+              lane: "right",
+              duration: "",
+            },
+            {
+              time: 140.412,
+              lane: "left",
+              duration: "",
+            },
+            {
+              time: 140.412,
+              lane: "right",
+              duration: "",
+            },
+            {
+              time: 142.2302,
+              lane: "left",
+              duration: "",
+            },
+            {
+              time: 142.2302,
+              lane: "right",
+              duration: "",
+            },
+            {
+              time: 143.5938,
+              lane: "left",
+              duration: 4.0909,
+            },
+            {
+              time: 143.5938,
+              lane: "right",
+              duration: 4.0909,
+            },
+            {
+              time: 149.5029,
+              lane: "left",
+              duration: "",
+            },
+            {
+              time: 149.5029,
+              lane: "right",
+              duration: "",
+            },
+            {
+              time: 151.7756,
+              lane: "left",
+              duration: "",
+            },
+            {
+              time: 152.6847,
+              lane: "left",
+              duration: "",
+            },
+            {
+              time: 154.9575,
+              lane: "left",
+              duration: "",
+            },
+            {
+              time: 155.8665,
+              lane: "left",
+              duration: "",
+            },
+            {
+              time: 155.8665,
+              lane: "right",
+              duration: "",
+            },
+            {
+              time: 156.7756,
+              lane: "right",
+              duration: "",
+            },
+            {
+              time: 157.6847,
+              lane: "left",
+              duration: "",
+            },
+            {
+              time: 158.5938,
+              lane: "right",
+              duration: "",
+            },
+            {
+              time: 159.5029,
+              lane: "left",
+              duration: "",
+            },
+            {
+              time: 159.5029,
+              lane: "right",
+              duration: "",
+            },
+            {
+              time: 160.412,
+              lane: "right",
+              duration: "",
+            },
+            {
+              time: 161.3211,
+              lane: "left",
+              duration: "",
+            },
+            {
+              time: 162.2302,
+              lane: "right",
+              duration: "",
+            },
+            {
+              time: 163.1393,
+              lane: "left",
+              duration: "",
+            },
+            {
+              time: 163.1393,
+              lane: "right",
+              duration: "",
+            },
+            {
+              time: 164.0484,
+              lane: "right",
+              duration: "",
+            },
+            {
+              time: 164.9575,
+              lane: "left",
+              duration: "",
+            },
+            {
+              time: 165.8665,
+              lane: "right",
+              duration: "",
+            },
+            {
+              time: 166.7756,
+              lane: "left",
+              duration: "",
+            },
+            {
+              time: 166.7756,
+              lane: "right",
+              duration: "",
+            },
+            {
+              time: 167.6847,
+              lane: "left",
+              duration: 2.7273,
+            },
+            {
+              time: 171.3211,
+              lane: "left",
+              duration: "",
+            },
+            {
+              time: 172.2302,
+              lane: "left",
+              duration: "",
+            },
+            {
+              time: 173.1393,
+              lane: "right",
+              duration: "",
+            },
+            {
+              time: 174.0484,
+              lane: "left",
+              duration: "",
+            },
+            {
+              time: 174.0484,
+              lane: "right",
+              duration: "",
+            },
+            {
+              time: 174.9575,
+              lane: "left",
+              duration: 2.7273,
+            },
+            {
+              time: 178.5938,
+              lane: "left",
+              duration: "",
+            },
+            {
+              time: 179.5029,
+              lane: "left",
+              duration: "",
+            },
+            {
+              time: 180.412,
+              lane: "left",
+              duration: 1.5909,
+            },
+            {
+              time: 182.2302,
+              lane: "left",
+              duration: 1.8182,
+            },
+            {
+              time: 184.5029,
+              lane: "right",
+              duration: "",
+            },
+            {
+              time: 185.8665,
+              lane: "right",
+              duration: 1.8182,
+            },
+            {
+              time: 188.1393,
+              lane: "left",
+              duration: "",
+            },
+            {
+              time: 189.5029,
+              lane: "left",
+              duration: 1.8182,
+            },
+            {
+              time: 191.7756,
+              lane: "right",
+              duration: "",
+            },
+            {
+              time: 194.9575,
+              lane: "left",
+              duration: 1.8182,
+            },
+            {
+              time: 193.1393,
+              lane: "right",
+              duration: 3.6364,
+            },
+            {
+              time: 197.2302,
+              lane: "left",
+              duration: "",
+            },
+            {
+              time: 198.1393,
+              lane: "left",
+              duration: "",
+            },
+            {
+              time: 200.412,
+              lane: "left",
+              duration: 2.7273,
+            },
+            {
+              time: 204.0484,
+              lane: "left",
+              duration: "",
+            },
+            {
+              time: 204.9575,
+              lane: "left",
+              duration: "",
+            },
+            {
+              time: 205.8665,
+              lane: "right",
+              duration: "",
+            },
+            {
+              time: 206.7756,
+              lane: "left",
+              duration: "",
+            },
+            {
+              time: 206.7756,
+              lane: "right",
+              duration: "",
+            },
+            {
+              time: 207.6847,
+              lane: "left",
+              duration: 2.7273,
+            },
+            {
+              time: 211.3211,
+              lane: "left",
+              duration: "",
+            },
+            {
+              time: 212.2302,
+              lane: "left",
+              duration: "",
+            },
+            {
+              time: 213.1393,
+              lane: "left",
+              duration: 1.5909,
+            },
+            {
+              time: 215.2605,
+              lane: "left",
+              duration: "",
+            },
+            {
+              time: 215.8665,
+              lane: "left",
+              duration: "",
+            },
           ],
           increaseTo: "medium",
           decreaseTo: null,
@@ -273,8 +1006,8 @@
         },
         medium: {
           name: "Medium",
-          bpm: 120,
-          noteSpeed: 180,
+          bpm: 132,
+          noteSpeed: 240,
           hitWindowMillis: { perfect: 100, good: 120, missAfter: 135 },
           notes: [
             { time: 9.9575, lane: "left", duration: "" },
@@ -683,7 +1416,7 @@
         },
         hard: {
           name: "Hard",
-          bpm: 150,
+          bpm: 132,
           noteSpeed: 240,
           hitWindowMillis: { perfect: 30, good: 60, missAfter: 100 },
           notes: [
@@ -4104,13 +4837,13 @@
       const stopButton = document.getElementById("stopButton");
 
       // --- Helper Functions ---
-      function generateSimpleBeatmap(bpm, numNotes, pattern) {
+      function generateSimpleBeatmap(bpm, numNotes) {
         const notes = [];
         const beatInterval = 60 / bpm; // seconds per beat
         for (let i = 0; i < numNotes; i++) {
           notes.push({
-            time: i * beatInterval * (Math.random() * 0.5 + 0.75), // time from map start in seconds, with some variation
-            lane: pattern[i % pattern.length],
+            time: i,
+            lane: "left",
           });
         }
         return notes;
@@ -4133,10 +4866,6 @@
         const oldDifficultyName = activeDifficulty.name;
         currentDifficultyKey = difficultyKey;
         activeDifficulty = DIFFICULTIES[currentDifficultyKey];
-
-        notesOnScreen = [];
-        currentMapStartTime = performance.now();
-        noteSpawnIndex = 0;
 
         difficultyDisplay.innerHTML = `Difficulty: <strong>${activeDifficulty.name}</strong>`;
         if (gameRunningId && oldDifficultyName !== activeDifficulty.name) {
@@ -4502,6 +5231,13 @@
         }
       }
 
+      function playMusic() {
+        setTimeout(() => {
+          const audio = document.getElementById("gameAudio");
+          audio.play();
+        }, 550);
+      }
+
       function startGame() {
         score = 0;
         currentCombo = 0;
@@ -4512,8 +5248,7 @@
         // currentDifficultyKey = 'medium'; // Or load from historical data if implemented
         loadBeatmap(currentDifficultyKey); // Load initial/current beatmap
 
-        lastDifficultyChangeTime = performance.now(); // Start cooldown timer
-        gameStartTime = performance.now();
+        playMusic();
 
         if (gameRunningId) cancelAnimationFrame(gameRunningId);
         gameRunningId = requestAnimationFrame(gameLoop);
@@ -4528,9 +5263,15 @@
         stopButton.disabled = false;
         console.log("Game started.");
       }
+      function stopMusic() {
+        const audio = document.getElementById("gameAudio");
+        audio.pause();
+        audio.currentTime = 0; // Reset to start
+      }
 
       function stopGame() {
         if (gameRunningId) {
+          stopMusic();
           cancelAnimationFrame(gameRunningId);
           gameRunningId = null;
         }
